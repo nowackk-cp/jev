@@ -14,6 +14,17 @@
 
 </div>
 
+<details>
+<summary><b>🇬🇧 English summary</b></summary>
+
+**Jev** is a Windows-first Python orchestrator that turns **Claude Code** and **Codex CLI** agents into a small software team. You describe a task in one sentence; Jev sizes the job, plans it into contract-based task cards, runs up to eight tasks in parallel in their own Git worktrees, verifies each result, decides whether to retry, reassign or split on failure, and hands you a final report. You can watch the team work in a live, animated office.
+
+- No Python dependencies · resumable runs (`jev devam`) · never merges or pushes to your branch
+- [Interactive demo](https://nowackk-cp.github.io/jev/): no install, login or API key needed
+
+</details>
+
+
 Jev, **Codex CLI** ve **Claude Code** üzerinden çalışan ajanları tek bir yazılım ekibine dönüştüren, Windows için geliştirilmiş bir Python orkestratörüdür. Bir cümleyle işe başlarsın; Jev işin ölçeğini seçer, görevleri dağıtır, sonuçları doğrular ve raporu sunar. Ekibin çalışmasını animasyonlu bir ofiste canlı izlersin.
 
 ```powershell
