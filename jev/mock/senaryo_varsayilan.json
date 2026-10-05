@@ -1,0 +1,752 @@
+{
+  "ad": "Yapılacaklar listesi CLI (varsayılan kuru koşu senaryosu)",
+  "aciklama": "Kuru koşuda istekten bağımsız olarak bu plan kullanılır. Sahte işçiler şablonlardan gerçek dosyalar yazar; doğrulama komutları gerçekten çalışır.",
+  "plan": {
+    "project_name": "Yapılacaklar CLI",
+    "slug": "yapilacaklar-cli",
+    "summary": "Komut satırından kullanılan, görevleri JSON dosyasında saklayan basit bir yapılacaklar listesi. Komutlar: ekle, listele, bitir, sil, temizle. Yalnızca Python standart kütüphanesi.",
+    "plan_markdown": "# Yapılacaklar CLI\n\n## 0. Özet\nKomut satırından kullanılan, görevleri bir JSON dosyasında saklayan basit bir yapılacaklar listesi.\nKomutlar: `ekle`, `listele`, `bitir`, `sil`, `temizle`. Yalnızca Python standart kütüphanesi kullanılır.\nDepolama ve komut satırı ayrı modüllerdir; ikisi de `unittest` ile test edilir.\n\n## 1. Amaç ve kapsam\n**Hedefler**\n- Görev ekleme, listeleme, tamamlandı olarak işaretleme, silme ve tamamlananları temizleme.\n- Görevler yeniden başlatmada kaybolmaz; Türkçe karakterler bozulmaz.\n- Hatalı girdide anlaşılır Türkçe hata mesajı ve 1 çıkış kodu.\n\n**Kapsam dışı**\n- Grafik arayüz, eşitleme, öncelik ve tarih alanları.\n\n## 2. Varsayımlar ve kısıtlar\n- Python 3.11 ya da daha yenisi kurulu; ek paket kurulmayacak.\n- Veri dosyası varsayılan olarak `%USERPROFILE%\\.todo-cli.json`; `TODO_DOSYA` ortam değişkeniyle değiştirilebilir.\n- Komutlar Windows PowerShell 5.1'de çalışır.\n\n## 3. Mimari\n- `todo/store.py`: `TodoStore` sınıfı; JSON dosyasını okur ve atomik olarak yazar.\n- `todo/cli.py`: `argparse` ile alt komutlar; `main(argv) -> int`.\n- `todo/__main__.py`: `python -m todo` giriş noktası.\n- `tests/`: `unittest` testleri. Testler geçici klasörde çalışır, kullanıcı verisine dokunmaz.\n\nVeri akışı: CLI → `TodoStore` → JSON dosyası. Görev numaraları kullanıcıya 1'den başlayarak gösterilir.\n\n## 4. Modüller\n- **M1 Depolama** (`todo/store.py`): `add(text)`, `list()`, `done(n)`, `remove(n)`, `clear_done()`. Bağımlılık yok.\n- **M2 Komut satırı** (`todo/cli.py`): `ekle`, `listele`, `bitir N`, `sil N`, `temizle`. M1'e bağlı.\n- **M3 Belgeler** (`README.md`): kurulum, kullanım, testler. M2'ye bağlı.\n\n## 5. Başarı ölçütleri\n- **SC1:** `ekle` ve `listele` çalışır. Komut: `python -m unittest tests.test_cli -v`\n- **SC2:** Görevler kalıcıdır ve Türkçe karakterler bozulmaz. Komut: `python -m unittest tests.test_store -v`\n- **SC3:** `bitir N` ve `sil N` doğru görevi etkiler; geçersiz numarada hata ve 1 çıkış kodu. Komut: `python -m unittest tests.test_cli -v`\n- **SC4:** `temizle` tamamlanan görevleri siler. Komut: `python -m unittest tests.test_cli -v`\n- **SC5:** README kurulum ve kullanımı anlatır. Komut: `Select-String -Path README.md -Pattern \"python -m todo\"`\n\n## 6. Kalite standartları\n- PEP 8, tip ipuçları, kısa fonksiyonlar.\n- Her modülün `unittest` testleri; testler geçici klasör kullanır.\n- Kullanıcıya dönük metinler Türkçe.\n\n## 7. Riskler ve önlemler\n- Veri dosyasının yarım yazılması → geçici dosyaya yazıp `os.replace` ile değiştirme.\n- Konsolda Türkçe karakterlerin bozulması → stdout'u UTF-8'e ayarlama.\n\n## 8. Önerilen uygulama sırası\n1. İskelet ve test altyapısı\n2. Depolama ve testleri\n3. Komut satırı\n4. Komut satırı testleri\n5. README\n",
+    "stack": {
+      "language": "Python 3.11+",
+      "frameworks": [
+        "argparse",
+        "unittest"
+      ],
+      "runtime_notes": "Ek paket yok. Komutlar Windows PowerShell 5.1'de çalışır."
+    },
+    "commands": {
+      "install": null,
+      "test": "python -m unittest discover -s tests -v",
+      "run": "python -m todo listele",
+      "lint": null
+    },
+    "modules": [
+      {
+        "id": "M1",
+        "name": "Depolama",
+        "responsibility": "Görevleri JSON dosyasında saklamak",
+        "interfaces": "TodoStore.add/list/done/remove/clear_done",
+        "depends_on": []
+      },
+      {
+        "id": "M2",
+        "name": "Komut satırı",
+        "responsibility": "Alt komutlar ve çıktı",
+        "interfaces": "todo.cli.main(argv) -> int; python -m todo",
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M3",
+        "name": "Belgeler",
+        "responsibility": "Kurulum ve kullanım belgesi",
+        "interfaces": "README.md",
+        "depends_on": [
+          "M2"
+        ]
+      }
+    ],
+    "success_criteria": [
+      {
+        "id": "SC1",
+        "statement": "ekle ve listele çalışır",
+        "verification": "CLI testleri",
+        "command": "python -m unittest tests.test_cli -v"
+      },
+      {
+        "id": "SC2",
+        "statement": "Görevler kalıcıdır ve Türkçe karakterler bozulmaz",
+        "verification": "Depolama testleri",
+        "command": "python -m unittest tests.test_store -v"
+      },
+      {
+        "id": "SC3",
+        "statement": "bitir N ve sil N doğru görevi etkiler; geçersiz numarada hata ve 1 çıkış kodu",
+        "verification": "CLI testleri",
+        "command": "python -m unittest tests.test_cli -v"
+      },
+      {
+        "id": "SC4",
+        "statement": "temizle tamamlanan görevleri siler",
+        "verification": "CLI testi: temizle sonrası yalnızca bitmemiş görevler kalır",
+        "command": "python -m unittest tests.test_cli -v"
+      },
+      {
+        "id": "SC5",
+        "statement": "README kurulum ve kullanımı anlatır",
+        "verification": "README.md içinde kullanım örnekleri",
+        "command": "Select-String -Path README.md -Pattern \"python -m todo\""
+      }
+    ],
+    "assumptions": [
+      "Python 3.11+ kurulu",
+      "Ek paket kurulmayacak",
+      "Veri dosyası TODO_DOSYA ile değiştirilebilir"
+    ],
+    "out_of_scope": [
+      "Grafik arayüz",
+      "Eşitleme",
+      "Öncelik ve tarih alanları"
+    ],
+    "risks": [
+      "Yarım yazılmış veri dosyası",
+      "Konsolda Türkçe karakter bozulması"
+    ],
+    "conventions": "PEP 8 ve tip ipuçları. Kullanıcıya dönük metinler Türkçe. Testler unittest ile, geçici klasörde çalışır; kullanıcının gerçek veri dosyasına dokunmaz. Görev numaraları 1'den başlar.",
+    "scale": null,
+    "needs": [],
+    "contracts": [
+      {
+        "id": "C1",
+        "name": "TodoStore",
+        "definition": "todo/store.py: class TodoStore(path: Path | None = None); path verilmezse TODO_DOSYA ortam değişkeni, o da yoksa ~/.todo-cli.json. Öğe: {\"text\": str, \"done\": bool}. add(text) -> öğe (boş metinde ValueError); list() -> list[öğe]; done(n) -> öğe; remove(n) -> öğe; clear_done() -> int (silinen sayısı). Numaralar 1'den başlar; geçersiz numarada IndexError. Dosya UTF-8 JSON, atomik yazılır (geçici dosya + os.replace)."
+      }
+    ],
+    "tasks": [
+      {
+        "id": "T01",
+        "title": "Proje iskeleti ve test altyapısı",
+        "module": "M1",
+        "type": "config",
+        "description": "todo paketini, python -m todo giriş noktasını ve tests klasörünü bir duman testiyle oluştur.",
+        "reads": [],
+        "outputs": [
+          "todo/__init__.py",
+          "todo/__main__.py",
+          "tests/__init__.py",
+          "tests/test_smoke.py"
+        ],
+        "contracts": [],
+        "acceptance": [
+          "import todo çalışır",
+          "tests klasöründe en az bir test geçer"
+        ],
+        "verify": [
+          "python -c \"import todo; print(todo.__version__)\"",
+          "python -m unittest tests.test_smoke -v"
+        ],
+        "depends_on": [],
+        "covers_criteria": [],
+        "complexity": "S",
+        "suggested_agent": "luna",
+        "notes": ""
+      },
+      {
+        "id": "T02",
+        "title": "Depolama katmanı ve testleri",
+        "module": "M1",
+        "type": "code",
+        "description": "todo/store.py içinde TodoStore sınıfını yaz: add, list, done, remove, clear_done. Numara 1'den başlar. Dosyayı atomik yaz. tests/test_store.py ile test et.",
+        "reads": [
+          "todo/__init__.py"
+        ],
+        "outputs": [
+          "todo/store.py",
+          "tests/test_store.py"
+        ],
+        "contracts": [
+          "C1"
+        ],
+        "acceptance": [
+          "Tüm depolama testleri geçer",
+          "Türkçe karakterler bozulmaz",
+          "Geçersiz numarada IndexError"
+        ],
+        "verify": [
+          "python -m unittest tests.test_store -v"
+        ],
+        "depends_on": [
+          "T01"
+        ],
+        "covers_criteria": [
+          "SC2"
+        ],
+        "complexity": "M",
+        "suggested_agent": "sol",
+        "notes": ""
+      },
+      {
+        "id": "T03",
+        "title": "Komut satırı arayüzü",
+        "module": "M2",
+        "type": "code",
+        "description": "todo/cli.py içinde argparse ile ekle, listele, bitir, sil ve temizle alt komutlarını yaz. Hatalı numarada Türkçe hata ve 1 çıkış kodu döndür.",
+        "reads": [
+          "todo/store.py"
+        ],
+        "outputs": [
+          "todo/cli.py"
+        ],
+        "contracts": [
+          "C1"
+        ],
+        "acceptance": [
+          "python -m todo ekle ve listele çalışır",
+          "Hatalı numarada çıkış kodu 1",
+          "temizle tamamlananları siler"
+        ],
+        "verify": [
+          "$env:TODO_DOSYA = Join-Path $env:TEMP 'jev-kuru-todo.json'; Remove-Item $env:TODO_DOSYA -ErrorAction SilentlyContinue; python -m todo ekle 'Süt al'; python -m todo listele"
+        ],
+        "depends_on": [
+          "T02"
+        ],
+        "covers_criteria": [
+          "SC1",
+          "SC3",
+          "SC4"
+        ],
+        "complexity": "M",
+        "suggested_agent": "sol",
+        "notes": ""
+      },
+      {
+        "id": "T04",
+        "title": "Komut satırı testleri",
+        "module": "M2",
+        "type": "test",
+        "description": "tests/test_cli.py içinde CLI'ı geçici veri dosyasıyla test et.",
+        "reads": [
+          "todo/cli.py"
+        ],
+        "outputs": [
+          "tests/test_cli.py"
+        ],
+        "contracts": [],
+        "acceptance": [
+          "ekle/listele, bitir/sil ve hatalı numara testleri geçer"
+        ],
+        "verify": [
+          "python -m unittest tests.test_cli -v"
+        ],
+        "depends_on": [
+          "T03"
+        ],
+        "covers_criteria": [
+          "SC1",
+          "SC3"
+        ],
+        "complexity": "S",
+        "suggested_agent": "sonnet",
+        "notes": ""
+      },
+      {
+        "id": "T05",
+        "title": "README",
+        "module": "M3",
+        "type": "docs",
+        "description": "README.md: kurulum, kullanım örnekleri, veri dosyası ve testler.",
+        "reads": [
+          "todo/cli.py"
+        ],
+        "outputs": [
+          "README.md"
+        ],
+        "contracts": [],
+        "acceptance": [
+          "README'de python -m todo örnekleri var"
+        ],
+        "verify": [
+          "if (-not (Select-String -Path README.md -Pattern 'python -m todo' -SimpleMatch -Quiet)) { exit 1 }"
+        ],
+        "depends_on": [
+          "T03"
+        ],
+        "covers_criteria": [
+          "SC5"
+        ],
+        "complexity": "S",
+        "suggested_agent": "luna",
+        "notes": ""
+      },
+      {
+        "id": "T06",
+        "title": "Uçtan uca test",
+        "module": "M2",
+        "type": "test",
+        "description": "tests/test_uctan_uca.py içinde python -m todo'yu gerçek bir alt süreç olarak, geçici veri dosyasıyla çalıştır: ekle, bitir, listele ve sil zincirini, verinin kalıcılığını ve hatalı numarada 1 çıkış kodunu doğrula.",
+        "reads": [
+          "todo/cli.py",
+          "todo/store.py"
+        ],
+        "outputs": [
+          "tests/test_uctan_uca.py"
+        ],
+        "contracts": [],
+        "acceptance": [
+          "Alt süreçle çalışan uçtan uca testler geçer",
+          "Kullanıcının gerçek veri dosyasına dokunulmaz"
+        ],
+        "verify": [
+          "python -m unittest tests.test_uctan_uca -v"
+        ],
+        "depends_on": [
+          "T03"
+        ],
+        "covers_criteria": [
+          "SC1",
+          "SC3"
+        ],
+        "complexity": "M",
+        "suggested_agent": "sonnet",
+        "notes": ""
+      }
+    ]
+  },
+  "workers": [
+    {
+      "task": "T01",
+      "steps": [
+        {
+          "do": "think",
+          "text": "Görevi okuyor",
+          "delay": 1.2
+        },
+        {
+          "do": "read",
+          "path": "AGENTS.md",
+          "delay": 0.8
+        },
+        {
+          "do": "write",
+          "path": "todo/__init__.py",
+          "delay": 1.2,
+          "template": "todo__init__.py.sablon"
+        },
+        {
+          "do": "write",
+          "path": "todo/__main__.py",
+          "delay": 1.2,
+          "template": "todo__main__.py.sablon"
+        },
+        {
+          "do": "write",
+          "path": "tests/__init__.py",
+          "delay": 1.2,
+          "content": ""
+        },
+        {
+          "do": "write",
+          "path": "tests/test_smoke.py",
+          "delay": 1.2,
+          "template": "test_smoke.py.sablon"
+        },
+        {
+          "do": "test",
+          "command": "python -m unittest tests.test_smoke -v",
+          "delay": 1.5
+        }
+      ],
+      "outcome": "done",
+      "summary": "todo paketi, python -m todo giriş noktası ve duman testi oluşturuldu. Duman testi geçiyor."
+    },
+    {
+      "task": "T02",
+      "agent": "sol",
+      "steps": [
+        {
+          "do": "think",
+          "text": "Depolama katmanını tasarlıyor",
+          "delay": 1.5
+        },
+        {
+          "do": "read",
+          "path": "todo/__init__.py",
+          "delay": 0.8
+        },
+        {
+          "do": "write",
+          "path": "todo/store.py",
+          "delay": 2.0,
+          "template": "store_hatali.py.sablon"
+        },
+        {
+          "do": "write",
+          "path": "tests/test_store.py",
+          "delay": 1.5,
+          "template": "test_store.py.sablon"
+        },
+        {
+          "do": "test",
+          "command": "python -m unittest tests.test_store -v",
+          "delay": 1.5
+        }
+      ],
+      "outcome": "done",
+      "summary": "TodoStore yazıldı; add, list, done, remove ve clear_done hazır. Testler yazıldı."
+    },
+    {
+      "task": "T02",
+      "agent": "sonnet",
+      "steps": [
+        {
+          "do": "think",
+          "text": "Jev'in notunu ve önceki denemeyi okuyor",
+          "delay": 1.5
+        },
+        {
+          "do": "read",
+          "path": "todo/store.py",
+          "delay": 0.8
+        },
+        {
+          "do": "test",
+          "command": "python -m unittest tests.test_store -v",
+          "delay": 1.5
+        },
+        {
+          "do": "think",
+          "text": "Numara 1'den başlıyor; indeks n-1 olmalı",
+          "delay": 1.2
+        },
+        {
+          "do": "write",
+          "path": "todo/store.py",
+          "delay": 1.5,
+          "template": "store.py.sablon"
+        },
+        {
+          "do": "write",
+          "path": "tests/test_store.py",
+          "delay": 0.8,
+          "template": "test_store.py.sablon"
+        },
+        {
+          "do": "test",
+          "command": "python -m unittest tests.test_store -v",
+          "delay": 1.5
+        }
+      ],
+      "outcome": "done",
+      "summary": "Sıra numarası hatası düzeltildi: done ve remove artık 1'den başlayan numarayı doğru indekse çeviriyor. Yedi depolama testi geçiyor."
+    },
+    {
+      "task": "T03",
+      "steps": [
+        {
+          "do": "think",
+          "text": "Komut satırını tasarlıyor",
+          "delay": 1.5
+        },
+        {
+          "do": "read",
+          "path": "todo/store.py",
+          "delay": 0.8
+        },
+        {
+          "do": "write",
+          "path": "todo/cli.py",
+          "delay": 2.0,
+          "template": "cli.py.sablon"
+        },
+        {
+          "do": "command",
+          "command": "python -m todo ekle 'Süt al'",
+          "delay": 0.8
+        },
+        {
+          "do": "command",
+          "command": "python -m todo listele",
+          "delay": 0.8
+        }
+      ],
+      "outcome": "done",
+      "summary": "argparse ile ekle, listele, bitir ve sil alt komutları yazıldı. Hatalı numarada Türkçe hata ve 1 çıkış kodu dönüyor."
+    },
+    {
+      "task": "T04",
+      "steps": [
+        {
+          "do": "think",
+          "text": "CLI testlerini planlıyor",
+          "delay": 1.2
+        },
+        {
+          "do": "read",
+          "path": "todo/cli.py",
+          "delay": 0.8
+        },
+        {
+          "do": "guard",
+          "tool": "Write",
+          "input": {
+            "file_path": "~/Desktop/jev-kuru-yedek.txt"
+          },
+          "delay": 1.0
+        },
+        {
+          "do": "think",
+          "text": "Proje dışına yazamıyor; testleri geçici klasörde tutacak",
+          "delay": 1.0
+        },
+        {
+          "do": "write",
+          "path": "tests/test_cli.py",
+          "delay": 1.5,
+          "template": "test_cli.py.sablon"
+        },
+        {
+          "do": "test",
+          "command": "python -m unittest tests.test_cli -v",
+          "delay": 1.5
+        }
+      ],
+      "outcome": "broken_json",
+      "summary": "CLI testleri yazıldı: ekle/listele, bitir/sil ve hatalı numara. Testler geçici veri dosyası kullanıyor."
+    },
+    {
+      "task": "T05",
+      "steps": [
+        {
+          "do": "think",
+          "text": "Görevi okuyor",
+          "delay": 1.0
+        }
+      ],
+      "outcome": "quota",
+      "error": "You've hit your usage limit. Upgrade to Pro or try again in 45m."
+    },
+    {
+      "task": "T05",
+      "steps": [
+        {
+          "do": "think",
+          "text": "Belgeyi planlıyor",
+          "delay": 1.0
+        },
+        {
+          "do": "read",
+          "path": "todo/cli.py",
+          "delay": 0.8
+        },
+        {
+          "do": "write",
+          "path": "README.md",
+          "delay": 1.5,
+          "template": "README.md.sablon"
+        }
+      ],
+      "outcome": "done",
+      "summary": "README yazıldı: kurulum, kullanım örnekleri, veri dosyası ve testler."
+    },
+    {
+      "task": "T06",
+      "steps": [
+        {
+          "do": "think",
+          "text": "Parçaların birlikte çalıştığını nasıl kanıtlayacağını düşünüyor",
+          "delay": 1.4
+        },
+        {
+          "do": "read",
+          "path": "todo/cli.py",
+          "delay": 0.8
+        },
+        {
+          "do": "read",
+          "path": "todo/store.py",
+          "delay": 0.8
+        },
+        {
+          "do": "write",
+          "path": "tests/test_uctan_uca.py",
+          "delay": 1.8,
+          "template": "test_uctan_uca.py.sablon"
+        },
+        {
+          "do": "test",
+          "command": "python -m unittest tests.test_uctan_uca -v",
+          "delay": 1.5
+        }
+      ],
+      "outcome": "done",
+      "summary": "Uçtan uca testler yazıldı: python -m todo alt süreçte ekle, bitir, listele ve sil zincirini, kalıcılığı ve hatalı numarayı doğruluyor. Üç test geçiyor."
+    },
+    {
+      "task": "D1-01",
+      "steps": [
+        {
+          "do": "think",
+          "text": "Rapordaki G1 eksiğini okuyor",
+          "delay": 1.2
+        },
+        {
+          "do": "read",
+          "path": "todo/cli.py",
+          "delay": 0.8
+        },
+        {
+          "do": "write",
+          "path": "todo/cli.py",
+          "delay": 1.5,
+          "template": "cli_temizle.py.sablon"
+        },
+        {
+          "do": "write",
+          "path": "tests/test_cli.py",
+          "delay": 1.2,
+          "template": "test_cli_temizle.py.sablon"
+        },
+        {
+          "do": "test",
+          "command": "python -m unittest tests.test_cli -v",
+          "delay": 1.5
+        }
+      ],
+      "outcome": "done",
+      "summary": "temizle alt komutu eklendi ve test edildi; tamamlanan görevler siliniyor."
+    }
+  ],
+  "brain": {
+    "T02": [
+      {
+        "decision": "reassign",
+        "agent": "sonnet",
+        "effort": "high",
+        "rollback": true,
+        "guidance": "Hata todo/store.py içindeki _index yönteminde: kullanıcı 1'den başlayan numara veriyor ama kod numarayı doğrudan indeks olarak kullanıyor. Aralık kontrolü 1 <= n <= len(items) olmalı ve indeks n - 1 dönmeli. Önce tests/test_store.py'yi çalıştırıp kalan testleri gör.",
+        "revised_task": null,
+        "new_tasks": [],
+        "rationale": "Doğrulama çıktısında test_done_marks_right_item ve test_remove kalıyor: bir kaydırma hatası. Sol aynı yaklaşımı tekrarlayabilir; testleri iyi okuyan Sonnet'e somut notla vermek daha ucuz.",
+        "deviation": "none",
+        "report_note": "T02: ilk deneme testlerden kaldı, görev Sonnet'e verildi."
+      }
+    ]
+  },
+  "review": {
+    "1": {
+      "verdict": "kismen",
+      "summary": "Dört ölçüt karşılandı; SC4 (temizle komutu) eksik.",
+      "report_markdown": "# Son Kontrol Raporu — Yapılacaklar CLI\n\n## Genel sonuç\n**Kısmen başarılı.** Depolama katmanı, temel komutlar, testler ve README planla uyumlu ve doğrulandı.\nAncak planın SC4 ölçütü karşılanmıyor: `temizle` alt komutu yazılmamış. Diğer dört ölçüt testlerle kanıtlandı.\nEksik küçük ve iyi tanımlı; tek bir düzeltme göreviyle kapatılabilir.\n\n## Başarı ölçütleri\n| SC | Durum | Kanıt | Eksik |\n|---|---|---|---|\n| SC1 | Karşılandı | `tests/test_cli.py`: test_add_and_list geçti; uçtan uca testler (T06) geçti | — |\n| SC2 | Karşılandı | `tests/test_store.py`: 7 test geçti, Türkçe metin testi dahil | — |\n| SC3 | Karşılandı | test_done_and_remove ve test_invalid_number geçti | — |\n| SC4 | Karşılanmadı | `todo/cli.py` içinde `temizle` alt komutu yok | `temizle` komutu ve testi |\n| SC5 | Karşılandı | README.md kullanım örnekleri içeriyor | `temizle` belgelenmemiş |\n\n## Modül modül durum\n- **M1 Depolama:** Tamam. `clear_done()` depolamada var ve test ediliyor.\n- **M2 Komut satırı:** `ekle`, `listele`, `bitir`, `sil` tamam; `temizle` eksik. Uçtan uca testler (T06) komutları\n  gerçek bir süreçte doğruluyor.\n- **M3 Belgeler:** Tamam.\n\n## Plandan sapmalar\n- T02: Sol'un ilk denemesi sıra numarası hatası yüzünden testlerden kaldı. Jev görevi notla Sonnet'e verdi; sapma yok.\n- T04: Sonnet'in proje dışına yazma denemesi koruma tarafından engellendi; görev proje içinde tamamlandı.\n- T05: Luna'nın kotası doldu; kural katmanı görevi Sonnet'e yönlendirdi.\n\n## Açık sorunlar ve riskler\n- `temizle` olmadan tamamlanan görevler listede birikir.\n\n## Nasıl çalıştırılır\n```powershell\npython -m todo ekle \"Süt al\"\npython -m todo listele\npython -m unittest discover -s tests -v\n```\n\n## Önerilen sonraki adımlar\n- G1 düzeltmesinden sonra README'ye `temizle` örneği eklenebilir.\n\n## Düzeltme önerileri\n- **G1 (SC4):** `todo/cli.py` içine `temizle` alt komutunu ekle; `TodoStore.clear_done()` kullan. `tests/test_cli.py` içine temizle testi ekle.\n",
+      "criteria": [
+        {
+          "id": "SC1",
+          "status": "met",
+          "evidence": "tests/test_cli.py test_add_and_list; tests/test_uctan_uca.py (T06)",
+          "gap": null
+        },
+        {
+          "id": "SC2",
+          "status": "met",
+          "evidence": "tests/test_store.py 7 test",
+          "gap": null
+        },
+        {
+          "id": "SC3",
+          "status": "met",
+          "evidence": "test_done_and_remove, test_invalid_number",
+          "gap": null
+        },
+        {
+          "id": "SC4",
+          "status": "unmet",
+          "evidence": "todo/cli.py içinde temizle yok",
+          "gap": "temizle alt komutu ve testi"
+        },
+        {
+          "id": "SC5",
+          "status": "met",
+          "evidence": "README.md",
+          "gap": null
+        }
+      ],
+      "gaps": [
+        {
+          "id": "G1",
+          "criteria": [
+            "SC4"
+          ],
+          "description": "temizle alt komutu yazılmamış",
+          "suggested_fix": "cli.py'ye temizle alt komutunu ekle (TodoStore.clear_done) ve test yaz"
+        }
+      ],
+      "risks": [
+        "Tamamlanan görevler listede birikir"
+      ],
+      "next_steps": [
+        "G1'i düzelt"
+      ]
+    },
+    "2": {
+      "verdict": "basarili",
+      "summary": "Beş ölçütün hepsi karşılandı; SC4 düzeltme turunda kapandı.",
+      "report_markdown": "# Son Kontrol Raporu — Yapılacaklar CLI\n\n## Genel sonuç\n**Başarılı.** Düzeltme turunda `temizle` alt komutu eklendi ve test edildi. Beş başarı ölçütünün hepsi\ntestlerle kanıtlandı. Önceki rapora göre değişen: SC4 artık karşılanıyor (D1-01).\n\n## Başarı ölçütleri\n| SC | Durum | Kanıt | Eksik |\n|---|---|---|---|\n| SC1 | Karşılandı | test_add_and_list ve uçtan uca testler (T06) geçti | — |\n| SC2 | Karşılandı | `tests/test_store.py`: 7 test geçti | — |\n| SC3 | Karşılandı | test_done_and_remove ve test_invalid_number geçti | — |\n| SC4 | Karşılandı | test_clear_done geçti (D1-01) | — |\n| SC5 | Karşılandı | README.md kullanım örnekleri içeriyor | — |\n\n## Modül modül durum\n- **M1 Depolama:** Tamam.\n- **M2 Komut satırı:** Tamam; `temizle` eklendi.\n- **M3 Belgeler:** Tamam.\n\n## Plandan sapmalar\n- Önceki turdaki sapmalar geçerli; bu turda yeni sapma yok.\n\n## Açık sorunlar ve riskler\n- Kayda değer risk yok.\n\n## Nasıl çalıştırılır\n```powershell\npython -m todo ekle \"Süt al\"\npython -m todo temizle\npython -m unittest discover -s tests -v\n```\n\n## Önerilen sonraki adımlar\n- İstenirse görevlere tarih ve öncelik alanları eklenebilir (kapsam dışıydı).\n\n## Düzeltme önerileri\n- Yok.\n",
+      "criteria": [
+        {
+          "id": "SC1",
+          "status": "met",
+          "evidence": "test_add_and_list",
+          "gap": null
+        },
+        {
+          "id": "SC2",
+          "status": "met",
+          "evidence": "tests/test_store.py",
+          "gap": null
+        },
+        {
+          "id": "SC3",
+          "status": "met",
+          "evidence": "test_done_and_remove, test_invalid_number",
+          "gap": null
+        },
+        {
+          "id": "SC4",
+          "status": "met",
+          "evidence": "test_clear_done (D1-01)",
+          "gap": null
+        },
+        {
+          "id": "SC5",
+          "status": "met",
+          "evidence": "README.md",
+          "gap": null
+        }
+      ],
+      "gaps": [],
+      "risks": [],
+      "next_steps": [
+        "İstenirse tarih ve öncelik alanları"
+      ]
+    }
+  },
+  "fix": {
+    "2": {
+      "tasks": [
+        {
+          "id": "D1-01",
+          "title": "temizle alt komutu",
+          "module": "M2",
+          "type": "code",
+          "description": "todo/cli.py içine temizle alt komutunu ekle (TodoStore.clear_done kullan) ve tests/test_cli.py içine test_clear_done testini ekle.",
+          "reads": [
+            "todo/cli.py",
+            "tests/test_cli.py"
+          ],
+          "outputs": [
+            "todo/cli.py",
+            "tests/test_cli.py"
+          ],
+          "contracts": [
+            "C1"
+          ],
+          "acceptance": [
+            "python -m todo temizle tamamlanan görevleri siler",
+            "test_clear_done geçer"
+          ],
+          "verify": [
+            "python -m unittest tests.test_cli -v"
+          ],
+          "depends_on": [],
+          "covers_criteria": [
+            "SC4"
+          ],
+          "complexity": "S",
+          "suggested_agent": "sol",
+          "notes": "G1"
+        }
+      ]
+    }
+  }
+}

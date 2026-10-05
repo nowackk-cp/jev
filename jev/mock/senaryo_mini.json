@@ -1,0 +1,33 @@
+{
+  "ad": "Çok basit hesap makinesi (mini kuru koşu senaryosu)",
+  "aciklama": "Mini ölçek: plan ve ayrı denetçi yok. Tek işçi tuş takımlı hesap makinesini yazar (index.html arayüz, hesap.js mantık, hesap.test.js davranış testleri) ve testi çalıştırır; Jev testi yeniden çalıştırıp raporu kendisi yazar. Kullanım: jev.toml içinde [kuru] senaryo = \"<bu dosyanın yolu>\".",
+  "olcek": "mini",
+  "zorluk": "kolay",
+  "kabul": true,
+  "workers": [
+    {
+      "task": "T01",
+      "steps": [
+        {"do": "think", "text": "İsteği okuyor: tuş takımlı, çok basit bir hesap makinesi", "delay": 0.8},
+        {"do": "write", "path": "hesap.js", "template": "hesap.js.sablon", "delay": 1.0},
+        {"do": "write", "path": "index.html", "template": "hesap_index.html.sablon", "delay": 1.0},
+        {"do": "write", "path": "hesap.test.js", "template": "hesap_test.js.sablon", "delay": 0.8},
+        {"do": "test", "command": "node hesap.test.js", "delay": 0.8}
+      ],
+      "outcome": "done",
+      "summary": "Tuş takımlı hesap makinesi: index.html arayüz, hesap.js mantık (tarayıcı ve Node), hesap.test.js 9 davranış testi geçiyor.",
+      "notes": "ÇALIŞTIRMA: index.html dosyasını tarayıcıda aç. Test: node hesap.test.js"
+    },
+    {
+      "task": "D1-01",
+      "steps": [
+        {"do": "think", "text": "Kullanıcının notunu okuyor", "delay": 0.6},
+        {"do": "write", "path": "NOTLAR.md", "content": "# Hesap makinesi\n\n- Arayüz: `index.html` (tarayıcıda aç).\n- Klavye: rakamlar, + - * /, Enter (=), Esc (C), virgül ya da nokta.\n- Test: `node hesap.test.js`\n", "delay": 0.6},
+        {"do": "test", "command": "node hesap.test.js", "delay": 0.6}
+      ],
+      "outcome": "done",
+      "summary": "Kullanım notu eklendi (NOTLAR.md); davranış testleri yine geçiyor.",
+      "notes": "ÇALIŞTIRMA: index.html dosyasını tarayıcıda aç."
+    }
+  ]
+}

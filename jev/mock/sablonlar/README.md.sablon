@@ -1,0 +1,34 @@
+# Yapılacaklar CLI
+
+Komut satırından kullanılan basit bir yapılacaklar listesi. Yalnızca Python standart kütüphanesini kullanır.
+
+## Kurulum
+
+Python 3.11 ya da daha yenisi yeterli; ek paket gerekmez. Proje klasöründe çalıştırın:
+
+```powershell
+python -m todo --help
+```
+
+## Kullanım
+
+```powershell
+python -m todo ekle "Süt al"
+python -m todo listele
+python -m todo bitir 1
+python -m todo sil 1
+```
+
+Görevler varsayılan olarak `%USERPROFILE%\.todo-cli.json` dosyasında saklanır. Başka bir dosya için
+`TODO_DOSYA` ortam değişkenini kullanın:
+
+```powershell
+$env:TODO_DOSYA = "C:\gecici\liste.json"
+python -m todo listele
+```
+
+## Testler
+
+```powershell
+python -m unittest discover -s tests -v
+```

@@ -1,0 +1,23 @@
+[build-system]
+# Kurulum arka ucu depoda duruyor (tools/paketle.py): `pip install -e .` hiçbir şey indirmez.
+requires = []
+build-backend = "paketle"
+backend-path = ["tools"]
+
+[project]
+name = "jev"
+dynamic = ["version"]                 # jev/__init__.py içindeki __version__
+description = "Çok ajanlı yazılım ofisi: Opus planı ve görev kartlarını yazar, Jev dağıtır, ajanlar kodlar, Sol denetler; canlı ofis arayüzüyle."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+keywords = ["ajan", "orkestrasyon", "codex", "claude-code", "cli"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: Microsoft :: Windows",
+    "Environment :: Console",
+    "Natural Language :: Turkish",
+]
+
+[project.scripts]
+jev = "jev.cli:run"

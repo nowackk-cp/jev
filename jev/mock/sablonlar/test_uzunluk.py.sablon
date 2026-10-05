@@ -1,0 +1,22 @@
+import unittest
+
+from uzunluk import cevir
+
+
+class UzunlukTest(unittest.TestCase):
+    def test_km_m(self):
+        self.assertAlmostEqual(cevir(5, "km", "m"), 5000)
+
+    def test_cm_mm(self):
+        self.assertAlmostEqual(cevir(2.5, "cm", "mm"), 25)
+
+    def test_mil(self):
+        self.assertAlmostEqual(cevir(1, "mil", "km"), 1.609344)
+
+    def test_bilinmeyen_birim(self):
+        with self.assertRaises(ValueError):
+            cevir(1, "adim", "m")
+
+
+if __name__ == "__main__":
+    unittest.main()

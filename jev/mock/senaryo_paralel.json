@@ -1,0 +1,265 @@
+{
+  "ad": "Birim dönüştürücü (paralel kuru koşu senaryosu)",
+  "aciklama": "Orta ölçek, aynı anda en fazla 2 görev: T01 (uzunluk) ve T02 (sıcaklık) birbirini beklemez, her biri kendi çalışma kopyasında (git worktree) aynı anda çalışır ve koşu dalına ayrı birer commit olarak birleşir; T03 (komut satırı) ikisini bekler ve proje klasöründe çalışır. Kullanım: jev.toml içinde [kuru] senaryo = \"<bu dosyanın yolu>\".",
+  "olcek": "orta",
+  "zorluk": "orta",
+  "paralel": 2,
+  "plan": {
+    "project_name": "Birim dönüştürücü",
+    "slug": "birim-donusturucu",
+    "summary": "Uzunluk ve sıcaklık birimleri arasında dönüşüm yapan küçük bir Python aracı. İki bağımsız modül ve onları birleştiren komut satırı; yalnızca standart kütüphane.",
+    "plan_markdown": "# Birim dönüştürücü\n\n## 0. Özet\nUzunluk (mm, cm, m, km, mil) ve sıcaklık (C, F, K) birimleri arasında dönüşüm yapan küçük bir Python aracı.\nUzunluk ve sıcaklık modülleri birbirinden bağımsızdır; komut satırı ikisini birleştirir.\n\n## 1. Amaç ve kapsam\n**Hedefler**\n- Uzunluk ve sıcaklık dönüşümü; bilinmeyen birimde anlaşılır Türkçe hata.\n- `python donustur.py 5 km m` biçiminde komut satırı.\n\n**Kapsam dışı**\n- Grafik arayüz, para birimi, ağırlık ve hacim.\n\n## 2. Varsayımlar ve kısıtlar\n- Python 3.11 ya da daha yenisi; ek paket yok.\n\n## 3. Mimari\n- `uzunluk.py`: `cevir(deger, kaynak, hedef)`; birimler metre katsayılarıyla.\n- `sicaklik.py`: `cevir(deger, kaynak, hedef)`; Celsius üzerinden.\n- `donustur.py`: birimin türüne göre doğru modülü çağırır; `main(argv) -> int`.\n- Testler `unittest` ile, her modülün yanında (`test_*.py`).\n\n## 4. Modüller\n- **M1 Uzunluk** (`uzunluk.py`). Bağımlılık yok.\n- **M2 Sıcaklık** (`sicaklik.py`). Bağımlılık yok.\n- **M3 Komut satırı** (`donustur.py`). M1 ve M2'ye bağlı.\n\n## 5. Başarı ölçütleri\n- **SC1:** Uzunluk dönüşümleri doğru. Komut: `python -m unittest test_uzunluk -v`\n- **SC2:** Sıcaklık dönüşümleri doğru. Komut: `python -m unittest test_sicaklik -v`\n- **SC3:** Komut satırı iki türü de çevirir, karışık birimde 1 çıkış kodu. Komut: `python -m unittest test_donustur -v`\n\n## 6. Kalite standartları\n- PEP 8, tip ipuçları; kullanıcıya dönük metinler Türkçe.\n\n## 7. Riskler ve önlemler\n- Ondalık virgül → komut satırında virgül noktaya çevrilir.\n\n## 8. Önerilen uygulama sırası\n1. Uzunluk ve sıcaklık (aynı anda)\n2. Komut satırı\n",
+    "stack": {
+      "language": "Python 3.11+",
+      "frameworks": [
+        "unittest"
+      ],
+      "runtime_notes": "Ek paket yok. Komutlar Windows PowerShell 5.1'de çalışır."
+    },
+    "commands": {
+      "install": null,
+      "test": "python -m unittest discover -v",
+      "run": "python donustur.py 5 km m",
+      "lint": null
+    },
+    "modules": [
+      {
+        "id": "M1",
+        "name": "Uzunluk",
+        "responsibility": "Uzunluk birimleri arasında dönüşüm",
+        "interfaces": "uzunluk.cevir(deger, kaynak, hedef) -> float; uzunluk.METRE",
+        "depends_on": []
+      },
+      {
+        "id": "M2",
+        "name": "Sıcaklık",
+        "responsibility": "Sıcaklık birimleri arasında dönüşüm",
+        "interfaces": "sicaklik.cevir(deger, kaynak, hedef) -> float; sicaklik.BIRIMLER",
+        "depends_on": []
+      },
+      {
+        "id": "M3",
+        "name": "Komut satırı",
+        "responsibility": "Birimin türüne göre dönüşüm ve çıktı",
+        "interfaces": "donustur.donustur(...) -> float; donustur.main(argv) -> int",
+        "depends_on": [
+          "M1",
+          "M2"
+        ]
+      }
+    ],
+    "success_criteria": [
+      {
+        "id": "SC1",
+        "statement": "Uzunluk dönüşümleri doğru; bilinmeyen birimde hata",
+        "verification": "Uzunluk testleri",
+        "command": "python -m unittest test_uzunluk -v"
+      },
+      {
+        "id": "SC2",
+        "statement": "Sıcaklık dönüşümleri doğru; bilinmeyen birimde hata",
+        "verification": "Sıcaklık testleri",
+        "command": "python -m unittest test_sicaklik -v"
+      },
+      {
+        "id": "SC3",
+        "statement": "Komut satırı iki türü de çevirir; karışık birimde 1 çıkış kodu",
+        "verification": "Komut satırı testleri",
+        "command": "python -m unittest test_donustur -v"
+      }
+    ],
+    "assumptions": [
+      "Python 3.11+ kurulu",
+      "Ek paket kurulmayacak"
+    ],
+    "out_of_scope": [
+      "Grafik arayüz",
+      "Para birimi, ağırlık ve hacim"
+    ],
+    "risks": [
+      "Ondalık virgül"
+    ],
+    "conventions": "PEP 8 ve tip ipuçları. Kullanıcıya dönük metinler Türkçe. Testler unittest ile, modülün yanında test_*.py.",
+    "scale": null,
+    "needs": [],
+    "contracts": [],
+    "tasks": [
+      {
+        "id": "T01",
+        "title": "Uzunluk dönüşümü ve testleri",
+        "module": "M1",
+        "type": "code",
+        "description": "uzunluk.py içinde METRE katsayıları ve cevir(deger, kaynak, hedef) yaz; bilinmeyen birimde ValueError. test_uzunluk.py ile test et.",
+        "reads": [],
+        "outputs": [
+          "uzunluk.py",
+          "test_uzunluk.py"
+        ],
+        "contracts": [],
+        "acceptance": [
+          "km→m, cm→mm ve mil→km doğru",
+          "Bilinmeyen birimde ValueError"
+        ],
+        "verify": [
+          "python -m unittest test_uzunluk -v"
+        ],
+        "depends_on": [],
+        "covers_criteria": [
+          "SC1"
+        ],
+        "complexity": "S",
+        "suggested_agent": "sonnet",
+        "notes": ""
+      },
+      {
+        "id": "T02",
+        "title": "Sıcaklık dönüşümü ve testleri",
+        "module": "M2",
+        "type": "code",
+        "description": "sicaklik.py içinde BIRIMLER ve cevir(deger, kaynak, hedef) yaz (C, F, K; Celsius üzerinden); bilinmeyen birimde ValueError. test_sicaklik.py ile test et.",
+        "reads": [],
+        "outputs": [
+          "sicaklik.py",
+          "test_sicaklik.py"
+        ],
+        "contracts": [],
+        "acceptance": [
+          "C→F, F→C ve C→K doğru",
+          "Bilinmeyen birimde ValueError"
+        ],
+        "verify": [
+          "python -m unittest test_sicaklik -v"
+        ],
+        "depends_on": [],
+        "covers_criteria": [
+          "SC2"
+        ],
+        "complexity": "S",
+        "suggested_agent": "luna",
+        "notes": ""
+      },
+      {
+        "id": "T03",
+        "title": "Komut satırı",
+        "module": "M3",
+        "type": "code",
+        "description": "donustur.py içinde birimin türüne göre uzunluk ya da sıcaklık modülünü çağıran donustur() ve main(argv) yaz; karışık birimde Türkçe hata ve 1 çıkış kodu. test_donustur.py ile test et.",
+        "reads": [
+          "uzunluk.py",
+          "sicaklik.py"
+        ],
+        "outputs": [
+          "donustur.py",
+          "test_donustur.py"
+        ],
+        "contracts": [],
+        "acceptance": [
+          "python donustur.py 5 km m → 5000 m",
+          "Karışık birimde çıkış kodu 1"
+        ],
+        "verify": [
+          "python -m unittest test_donustur -v"
+        ],
+        "depends_on": [
+          "T01",
+          "T02"
+        ],
+        "covers_criteria": [
+          "SC3"
+        ],
+        "complexity": "S",
+        "suggested_agent": "sonnet",
+        "notes": ""
+      }
+    ]
+  },
+  "workers": [
+    {
+      "task": "T01",
+      "steps": [
+        {
+          "do": "think",
+          "text": "Uzunluk birimlerini metre katsayılarıyla kuruyor",
+          "delay": 1.0
+        },
+        {
+          "do": "write",
+          "path": "uzunluk.py",
+          "template": "uzunluk.py.sablon",
+          "delay": 1.2
+        },
+        {
+          "do": "write",
+          "path": "test_uzunluk.py",
+          "template": "test_uzunluk.py.sablon",
+          "delay": 1.2
+        },
+        {
+          "do": "test",
+          "command": "python -m unittest test_uzunluk -v",
+          "delay": 0.8
+        }
+      ],
+      "outcome": "done",
+      "summary": "uzunluk.py: METRE katsayıları ve cevir(); dört test geçiyor."
+    },
+    {
+      "task": "T02",
+      "steps": [
+        {
+          "do": "think",
+          "text": "Sıcaklığı Celsius üzerinden çeviriyor",
+          "delay": 1.0
+        },
+        {
+          "do": "write",
+          "path": "sicaklik.py",
+          "template": "sicaklik.py.sablon",
+          "delay": 1.2
+        },
+        {
+          "do": "write",
+          "path": "test_sicaklik.py",
+          "template": "test_sicaklik.py.sablon",
+          "delay": 1.2
+        },
+        {
+          "do": "test",
+          "command": "python -m unittest test_sicaklik -v",
+          "delay": 0.8
+        }
+      ],
+      "outcome": "done",
+      "summary": "sicaklik.py: C, F, K dönüşümü ve cevir(); dört test geçiyor."
+    },
+    {
+      "task": "T03",
+      "steps": [
+        {
+          "do": "think",
+          "text": "Birimin türüne göre modül seçiyor",
+          "delay": 1.0
+        },
+        {
+          "do": "write",
+          "path": "donustur.py",
+          "template": "donustur.py.sablon",
+          "delay": 1.2
+        },
+        {
+          "do": "write",
+          "path": "test_donustur.py",
+          "template": "test_donustur.py.sablon",
+          "delay": 1.2
+        },
+        {
+          "do": "test",
+          "command": "python -m unittest test_donustur -v",
+          "delay": 0.8
+        }
+      ],
+      "outcome": "done",
+      "summary": "donustur.py: komut satırı; karışık birimde 1 çıkış kodu. Üç test geçiyor."
+    }
+  ]
+}

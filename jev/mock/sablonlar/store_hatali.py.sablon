@@ -1,0 +1,65 @@
+"""Görevleri bir JSON dosyasında saklar."""
+from __future__ import annotations
+
+import json
+import os
+from pathlib import Path
+
+
+def default_path() -> Path:
+    return Path(os.environ.get("TODO_DOSYA") or (Path.home() / ".todo-cli.json"))
+
+
+class TodoStore:
+    def __init__(self, path: Path | None = None):
+        self.path = Path(path) if path else default_path()
+
+    def _load(self) -> list[dict]:
+        try:
+            data = json.loads(self.path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return []
+        return data if isinstance(data, list) else []
+
+    def _save(self, items: list[dict]) -> None:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = self.path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8")
+        os.replace(tmp, self.path)
+
+    def add(self, text: str) -> dict:
+        text = text.strip()
+        if not text:
+            raise ValueError("Görev metni boş olamaz.")
+        items = self._load()
+        item = {"text": text, "done": False}
+        items.append(item)
+        self._save(items)
+        return item
+
+    def list(self) -> list[dict]:
+        return self._load()
+
+    def _index(self, items: list[dict], n: int) -> int:
+        if not 0 <= n < len(items):
+            raise IndexError(f"{n} numaralı görev yok.")
+        return n
+
+    def done(self, n: int) -> dict:
+        items = self._load()
+        i = self._index(items, n)
+        items[i]["done"] = True
+        self._save(items)
+        return items[i]
+
+    def remove(self, n: int) -> dict:
+        items = self._load()
+        item = items.pop(self._index(items, n))
+        self._save(items)
+        return item
+
+    def clear_done(self) -> int:
+        items = self._load()
+        kept = [x for x in items if not x.get("done")]
+        self._save(kept)
+        return len(items) - len(kept)

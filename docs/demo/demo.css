@@ -1,0 +1,15 @@
+.demo-bar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:22px; padding:24px 28px; border-bottom:1px solid var(--line); background:var(--panel); }
+.demo-intro h1 { font-size:clamp(20px,2.5vw,32px); letter-spacing:-.8px; margin:6px 0 8px; line-height:1.2; }
+.demo-intro p { margin:0 0 7px; color:var(--muted); font-size:13px; }
+.demo-intro small { font-size:11px; color:var(--muted); }
+.demo-eyebrow { color:var(--accent); font-size:10px; font-weight:800; letter-spacing:2px; }
+.demo-actions { display:grid; gap:10px; min-width:320px; }
+.demo-actions label { display:flex; align-items:center; gap:9px; font-size:11px; font-weight:700; color:var(--muted); }
+.demo-actions select { min-width:0; flex:1; padding:8px; border:1px solid var(--line); border-radius:7px; color:var(--ink); background:var(--panel-2); font:inherit; font-size:12px; }
+.demo-buttons { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+.demo-speed select { padding:6px; }
+.demo-github { text-decoration:none; margin-left:auto; background:var(--ink); color:var(--panel); }
+.demo-timeline { display:flex; align-items:center; gap:12px; }
+.demo-timeline span { color:var(--muted); font-size:11px; min-width:120px; }
+.demo-timeline progress { width:100%; height:5px; accent-color:var(--accent); }
+@media(max-width:640px) { .demo-bar {padding:18px 16px;gap:16px;} .demo-actions {width:100%; min-width:0;} .demo-timeline span {min-width:100px;} .stage {min-width:0;} .kanban {grid-template-columns:repeat(2,minmax(0,1fr));} }

@@ -1,0 +1,49 @@
+"""Uçtan uca: python -m todo gerçek bir alt süreç olarak çalışır; veri geçici dosyada tutulur."""
+import os
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+
+
+class UctanUcaTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.data = Path(self.tmp.name) / "todo.json"
+        self.env = dict(os.environ, TODO_DOSYA=str(self.data))
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def todo(self, *args):
+        p = subprocess.run([sys.executable, "-m", "todo", *args], cwd=ROOT, env=self.env, capture_output=True,
+                           text=True, encoding="utf-8", timeout=60)
+        return p.returncode, p.stdout, p.stderr
+
+    def test_zincir(self):
+        self.assertEqual(self.todo("ekle", "Süt al")[0], 0)
+        self.assertEqual(self.todo("ekle", "Çay demle")[0], 0)
+        self.assertEqual(self.todo("bitir", "1")[0], 0)
+        code, out, _ = self.todo("listele")
+        self.assertEqual(code, 0)
+        self.assertIn("1. [x] Süt al", out)
+        self.assertIn("2. [ ] Çay demle", out)
+        self.assertEqual(self.todo("sil", "2")[0], 0)
+        self.assertNotIn("Çay demle", self.todo("listele")[1])
+
+    def test_veri_kalici(self):
+        self.todo("ekle", "Kalıcı görev")
+        self.assertTrue(self.data.exists())
+        self.assertIn("Kalıcı görev", self.todo("listele")[1])
+
+    def test_hatali_numara(self):
+        code, _, err = self.todo("sil", "9")
+        self.assertEqual(code, 1)
+        self.assertIn("Hata", err)
+
+
+if __name__ == "__main__":
+    unittest.main()

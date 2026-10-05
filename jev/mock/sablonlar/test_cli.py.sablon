@@ -1,0 +1,49 @@
+import io
+import os
+import tempfile
+import unittest
+from contextlib import redirect_stderr, redirect_stdout
+from pathlib import Path
+from unittest import mock
+
+from todo.cli import main
+
+
+class CliTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.env = mock.patch.dict(os.environ, {"TODO_DOSYA": str(Path(self.tmp.name) / "todo.json")})
+        self.env.start()
+
+    def tearDown(self):
+        self.env.stop()
+        self.tmp.cleanup()
+
+    def run_cli(self, *args):
+        out, err = io.StringIO(), io.StringIO()
+        with redirect_stdout(out), redirect_stderr(err):
+            code = main(list(args))
+        return code, out.getvalue(), err.getvalue()
+
+    def test_add_and_list(self):
+        self.assertEqual(self.run_cli("ekle", "Süt", "al")[0], 0)
+        code, out, _ = self.run_cli("listele")
+        self.assertEqual(code, 0)
+        self.assertIn("1. [ ] Süt al", out)
+
+    def test_done_and_remove(self):
+        self.run_cli("ekle", "bir")
+        self.run_cli("ekle", "iki")
+        self.assertEqual(self.run_cli("bitir", "2")[0], 0)
+        self.assertIn("2. [x] iki", self.run_cli("listele")[1])
+        self.assertEqual(self.run_cli("sil", "1")[0], 0)
+        self.assertIn("1. [x] iki", self.run_cli("listele")[1])
+
+    def test_invalid_number(self):
+        code, _, err = self.run_cli("bitir", "7")
+        self.assertEqual(code, 1)
+        self.assertIn("Hata", err)
+
+
+if __name__ == "__main__":
+    unittest.main()

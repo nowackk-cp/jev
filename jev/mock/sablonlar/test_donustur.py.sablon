@@ -1,0 +1,27 @@
+import contextlib
+import io
+import unittest
+
+from donustur import donustur, main
+
+
+class DonusturTest(unittest.TestCase):
+    def test_uzunluk_ve_sicaklik(self):
+        self.assertAlmostEqual(donustur(5, "km", "m"), 5000)
+        self.assertAlmostEqual(donustur(100, "C", "F"), 212)
+
+    def test_karisik_birim(self):
+        with self.assertRaises(ValueError):
+            donustur(1, "km", "C")
+
+    def test_main(self):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.assertEqual(main(["2,5", "km", "m"]), 0)
+        self.assertEqual(out.getvalue().strip(), "2500 m")
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(main(["1", "km", "C"]), 1)
+
+
+if __name__ == "__main__":
+    unittest.main()

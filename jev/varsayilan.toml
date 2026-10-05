@@ -1,0 +1,209 @@
+# Jev varsayılan ayarları.
+# Değiştirmek için bu dosyayı düzenleme; aynı anahtarları %USERPROFILE%\.jev\jev.toml dosyasına yaz.
+# TOML'da null yoktur: "boş" değerler "" ile yazılır.
+
+proje_koku = "~/jev-projeler"        # yeni projeler burada açılır
+paralel = 8                           # aynı anda en fazla kaç görev çalışır; ölçek profili bunu düşürür ([olcek.*].paralel)
+plan_onayi = false                    # --onay bayrağı bunu true yapar; büyük ölçekte plan onayı ayrıca istenir
+her_gorevde_tam_test = true           # her görevden sonra plan.commands.test de çalışır
+
+[arayuz]
+acik = true
+port = 8765                           # doluysa sıradaki boş port kullanılır
+tarayici_ac = true
+sonucu_ac = true                      # iş bitince HTML, video, görsel ya da PDF sonucu açılır (program ve betik asla başlatılmaz; kuru koşuda açılmaz)
+
+[zaman_asimi_dk]
+plan = 30                             # plan ve görev kartları tek çağrıda
+isci_S = 20
+isci_M = 40
+isci_L = 60
+beyin = 10
+denetim = 30
+verify = 10
+test = 2                              # jev ajanlar --test
+
+[sinirlar]
+gorev_basina_deneme = 4
+kosu_basina_beyin_cagrisi = 25
+en_fazla_gorev = 40
+paket_karakter = 60000
+onarim_denemesi = 2                   # bozuk JSON / geçersiz görev grafiği için
+denetim_karesi = 6                    # orta ve büyük işte denetçiye verilen sonuç karesi (sayfa, video, PDF); 0 = kapalı
+gecici_hata_bekleme_sn = 45
+
+[guvenlik]
+tam_yetki = true                      # işçiler onay sormadan çalışır
+koruma = false                        # guard kapalı; true ile isteğe bağlı açılır
+
+[cli]
+codex = "auto"                        # ya da codex.exe'nin tam yolu
+claude = "auto"                       # ya da claude.exe'nin tam yolu
+codex_kullanici_ayarini_yoksay = true # M0: daha hızlı ve daha az token
+codex_windows_sandbox = "elevated"
+codex_service_tier = ""               # "" = dokunma
+claude_ortam_temizle = true           # CLAUDECODE, ANTHROPIC_API_KEY/AUTH_TOKEN/BASE_URL (Claude Code içinden çalışırken CLAUDE_CODE_* de) alt sürece geçmez
+claude_ek_argumanlar = ["--strict-mcp-config"]
+codex_ek_argumanlar = []
+
+[ajanlar.opus]
+saglayici = "claude"
+model = "claude-opus-5-5"
+etiket = "Claude Opus 5.5"
+roller = ["planlayici", "beyin", "isci", "eskalasyon"]  # planı ve kartları yazar; işçi olarak yalnızca zor (L) görevleri alır
+tanim = "Proje şefi: isteği inceler, planı ve görev kartlarını yazar, Jev'in beynidir. İşçi olarak yalnızca zor mantık gerektiren büyük (L) görevleri alır; bir görev takılınca da kodu o yazar."
+es_zamanli = 2  # aynı anda en fazla kaç görev alır (paralel görevlerde)
+gorev_boyu = ["L"]                    # işçi olarak alabileceği görev boyları (yoksa hepsi); Jev'in eskalasyon kararı bunu aşar
+ret_yedek_model = "claude-opus-4-8"   # güvenlik reddinde aynı çağrı bir kez bu modelle denenir; o da reddederse iş ret_takasi ajanına (Sol) geçer
+efor = { varsayilan = "high", plan = "xhigh", S = "high", M = "high", L = "xhigh", denetim = "high", test = "low" }
+
+[ajanlar.sol]
+saglayici = "codex"
+model = "gpt-6.1-sol"
+etiket = "GPT-6.1-Sol"
+roller = ["isci", "denetci"]
+tanim = "Kıdemli usta ve son kontrolcü. Orta ve büyük kod görevlerinin ilk adayı; orta ve büyük işin sonunda kanıt paketine ve sonucun karelerine bakıp raporu yazar."
+es_zamanli = 2
+efor = { S = "medium", M = "high", L = "xhigh", plan = "xhigh", denetim = "high", test = "low" }  # plan: ret takasında
+
+[ajanlar.sonnet]
+saglayici = "claude"
+model = "claude-sonnet-5-5"
+etiket = "Claude Sonnet 5.5"
+roller = ["isci"]
+tanim = "Usta. Her boydan görev alır; test yazma ve hata ayıklamada güçlü."
+es_zamanli = 2
+efor = { S = "medium", M = "high", L = "high", test = "low" }
+
+[ajanlar.luna]
+saglayici = "codex"
+model = "gpt-6-luna"
+etiket = "GPT-6-Luna"
+roller = ["isci"]
+tanim = "Çırak. Küçük ve net görevler, belge, ayar dosyaları; zor mantık gerektiren işlere uygun değil."
+es_zamanli = 2
+efor = { S = "medium", M = "medium", L = "high", test = "low" }
+
+[jev]
+planlayici = "opus"                   # isteği inceler; araştırma ihtiyacını, planı, sözleşmeleri ve görev kartlarını tek çağrıda yazar
+denetci = "sol"                       # orta ve büyük işte son kontrol: komutları Jev çalıştırır, denetçi kanıt paketine bakar
+# Yedek denetçi (kimse kendi işini denetlemesin): listedeki ölçekte kodun yarısından fazlasını denetçi kendisi yazdıysa
+# son kontrolü yedek yapar. Yedek soğumadaysa ya da çağrılamazsa beklenmez, denetim denetçide kalır.
+# Orta işte de istersen olcekler = ["orta", "buyuk"]; kapatmak için olcekler = [].
+yedek_denetci = { ajan = "opus", olcekler = ["buyuk"] }
+# Metin yazan beyin: Jev modeli split/revise seçtiğinde görev metinlerini yazar, Jev modeli emin değilse ya da
+# ulaşılamıyorsa kararı kendisi verir.
+beyin = "opus"
+yedek_beyin = { ajan = "sol", efor = "xhigh" }
+# Ret yedeği: Opus bir çağrıyı güvenlik gerekçesiyle reddederse önce ret_yedek_model (Opus 4.8) dener; o da reddederse
+# yalnızca O ÇAĞRI (plan, karar, düzeltme, görev ya da son kontrol) bu ajana geçer. Opus koşudan çıkarılmaz.
+# Kapatmak için ret_takasi = "".
+ret_takasi = "sol"
+
+[jev.model]                           # Jev'in kendi yapay zekâsı: TypeSafe Jev (System One), docs.typesafe.ai
+acik = true                           # false: Jev modeli hiç kullanılmaz (eski davranış)
+model = "jev-latest"
+adres = "https://api.typesafe.ai/v1/systemone"
+anahtar_ortam = "TYPESAFE_API_KEY"    # anahtar bu ortam değişkeninden okunur; dosyaya yazılmaz
+guven_esigi = 0.6                     # karar güveni bunun altındaysa karar metin yazan beyne bırakılır
+dagitim = true                        # görevi hangi ajanın alacağını da Jev modeli seçer
+zaman_asimi_sn = 20
+deneme = 3                            # 429/529/ağ hatasında toplam deneme
+
+[yonlendirme]
+S = ["luna", "sonnet", "sol"]
+M = ["sol", "sonnet"]
+L = ["opus", "sol", "sonnet"]
+saglayici_dengesi = 2                 # eşdeğer alternatif varsa aynı sağlayıcıya art arda en fazla 2 görev
+# Jev'in kararıyla her boyda iş alabilen ajanlar (gorev_boyu sınırını aşar): bir görev takılınca kodu Opus yazar.
+eskalasyon = ["opus"]
+
+[yonlendirme.tur]
+docs = ["luna", "sonnet"]
+test = ["sonnet", "sol"]
+config = ["luna", "sol"]
+research = ["sonnet", "sol"]          # internette araştırma, veri toplama: her bilgi kaynağıyla bir dosyaya yazılır
+
+[olcek]
+# Jev koşunun başında işin BOYUNU (mini, kucuk, orta, buyuk) ve ZORLUĞUNU (kolay, orta, zor) ölçer.
+# Boy töreni belirler (plan, denetim), zorluk ajanı ve eforu. Karar sırası: --olcek bayrağı >
+# istekteki açık ifade > Jev modeli > kelime kuralı.
+emin_olma = 0.75                      # P(iş ≤ seviye) bu eşiği geçen en küçük seviye seçilir (en ucuzdan başla)
+ogrenme = true                        # kararlar ve sonuçlar %USERPROFILE%\.jev\olcek_gecmisi.jsonl'e yazılır, sonraki ölçümlere girer
+ifade_mini = ["çok basit", "en basit", "sadece test için", "test amaçlı", "deneme amaçlı", "tek dosyalık"]
+ifade_buyuk = ["kurumsal", "şirket için", "production", "canlı ortam", "enterprise"]
+# Jev modeline ulaşılamazsa bakılan daha geniş kelimeler; hiçbiri yoksa yeni projede kucuk, mevcut projede orta
+kural_mini = ["basit", "küçük", "ufak", "minik", "örnek", "deneme"]
+kural_buyuk = ["kapsamlı", "ölçeklenebilir", "mikroservis", "çok kullanıcılı", "yönetim paneli", "e-ticaret"]
+
+[olcek.havuz]                         # tek görevli işlerde (mini, kucuk) zorluğa göre aday işçiler; aralarından Jev seçer
+kolay = ["sonnet", "luna"]
+orta = ["sonnet", "sol"]
+zor = ["opus", "sol", "sonnet"]
+
+# Profiller. plan: "yok" (plan yok, işi tek işçi yapar), "tablo" (planlayıcının efor tablosu) ya da tavan efor.
+# denetim: "jev" (Jev işçinin komutlarını yeniden çalıştırır ve raporu kendisi yazar), "tablo" ya da tavan efor (komutları
+# yine Jev çalıştırır; denetçi ajan kanıt paketine ve sonucun karelerine bakıp raporu yazar).
+# isci_tavan / beyin_tavan: görev boyuna (S/M/L; zorluk kolay/orta/zor bunlara denk düşer) göre efor tavanı, "tablo" = tavansız.
+# Tavan yalnızca ilk denemeyi bağlar; Jev'in kararıyla yükseltilen efor tavanı aşabilir.
+# deneme, en_fazla_gorev, verify_dk, paralel: genel ayarın (sinirlar, zaman_asimi_dk.verify, paralel) üstüne çıkamaz; 0 = genel ayar.
+[olcek.mini]
+plan = "yok"
+en_fazla_gorev = 1
+isci_tavan = { S = "low", M = "medium", L = "high" }
+beyin_tavan = "medium"
+denetim = "jev"
+deneme = 2                            # bitince iş kendiliğinden kucuk ölçeğe yükselir (yarım iş geri alınır)
+verify_dk = 2
+paralel = 1
+plan_onayi = false
+
+[olcek.kucuk]
+plan = "yok"
+en_fazla_gorev = 1
+isci_tavan = { S = "low", M = "medium", L = "high" }
+beyin_tavan = "medium"
+denetim = "jev"
+deneme = 0
+verify_dk = 5
+paralel = 1
+plan_onayi = false
+
+[olcek.orta]
+plan = "high"
+en_fazla_gorev = 12
+isci_tavan = { S = "low", M = "medium", L = "high" }
+beyin_tavan = "high"
+denetim = "medium"
+deneme = 0
+verify_dk = 0
+paralel = 0                            # 0 = genel ayar (8)
+plan_onayi = false
+
+[olcek.buyuk]
+plan = "tablo"
+en_fazla_gorev = 0
+isci_tavan = { S = "tablo", M = "tablo", L = "tablo" }
+beyin_tavan = "tablo"
+denetim = "tablo"
+deneme = 0
+verify_dk = 0
+paralel = 0
+plan_onayi = true                     # plan yazılınca iş durur; ofisteki "Planı onayla" ya da jev onayla (kuru koşuda sorulmaz)
+
+[kota]
+bekleme_esigi_dk = 30
+varsayilan_soguma_dk = 60
+# Yalnızca CLI'ın kendi hata kanallarında aranır. "reset" kelimesini kalıp yapma:
+# "connection reset" gibi ağ hatalarıyla karışır. Sıfırlanma zamanı ayrıca ayrıştırılır.
+# Claude'da önce stream-json'daki rate_limit_event okunur (status "rejected"); kalıplar yedektir.
+kaliplar = ["usage limit", "rate[ _-]?limit", "limit reached", "hit your (?:\\w+ )?limit", "quota", "too many requests", "\\b429\\b"]
+gecici_kaliplar = ["overloaded", "\\b5\\d\\d\\b", "timed out", "timeout", "connection", "network", "econnreset", "stream error", "temporarily unavailable", "service unavailable"]
+# Oturum kapalı / giriş gerekli: koşu duraklatılır ve kullanıcıdan giriş yapması istenir.
+# Güvenlik reddi (modelin güvenlik filtresi isteği yanıtlamadı): yeniden denenmez. Planlayıcı reddederse ret takası
+# devreye girer; işçi reddederse görev sıradaki işçiye geçer ve o işçi koşuda kod kartı almaz.
+ret_kaliplari = ["usage policy", "unable to respond to this request", "stop_reason[\"': ]+refusal", "content[ _]policy", "safety (?:system|filter)s? (?:flagged|blocked)", "cyber_policy"]
+oturum_kaliplari = ["not logged in", "please run /login", "run /login", "invalid api key", "authentication_error", "authentication failed", "unauthorized", "\\b401\\b", "login required", "please log in", "oauth token has expired", "codex login", "claude auth login"]
+
+[kuru]
+senaryo = ""                          # "" = jev/mock/senaryo_varsayilan.json

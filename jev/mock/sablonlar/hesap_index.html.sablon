@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hesap Makinesi</title>
+<style>
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; font-family: system-ui, sans-serif;
+         background: #eef1f5; }
+  .hesap { width: 280px; padding: 16px; border-radius: 16px; background: #1f2430;
+           box-shadow: 0 10px 30px rgba(0, 0, 0, .25); }
+  .ekran { height: 64px; margin-bottom: 12px; padding: 0 12px; border-radius: 10px; background: #11151c; color: #fff;
+           font-size: 34px; line-height: 64px; text-align: right; overflow: hidden; }
+  .tuslar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  button { height: 56px; border: 0; border-radius: 10px; font-size: 22px; background: #394050; color: #fff;
+           cursor: pointer; }
+  button:active { filter: brightness(1.3); }
+  .islem { background: #f59f00; }
+  .sil { grid-column: span 2; background: #c92a2a; }
+  .esit { grid-row: span 2; height: auto; background: #2f9e44; }
+  .sifir { grid-column: span 2; }
+</style>
+</head>
+<body>
+<main class="hesap">
+  <div class="ekran" id="ekran">0</div>
+  <div class="tuslar">
+    <button class="sil" data-t="C">C</button>
+    <button class="islem" data-t="/">÷</button>
+    <button class="islem" data-t="*">×</button>
+    <button data-t="7">7</button><button data-t="8">8</button><button data-t="9">9</button>
+    <button class="islem" data-t="-">−</button>
+    <button data-t="4">4</button><button data-t="5">5</button><button data-t="6">6</button>
+    <button class="islem" data-t="+">+</button>
+    <button data-t="1">1</button><button data-t="2">2</button><button data-t="3">3</button>
+    <button class="esit" data-t="=">=</button>
+    <button class="sifir" data-t="0">0</button>
+    <button data-t=".">,</button>
+  </div>
+</main>
+<script src="hesap.js"></script>
+<script>
+  const durum = Hesap.yeni();
+  const ekran = document.getElementById("ekran");
+  function bas(t) { ekran.textContent = Hesap.tus(durum, t).replace(".", ","); }
+  document.querySelectorAll("button[data-t]").forEach((b) => b.addEventListener("click", () => bas(b.dataset.t)));
+  const KLAVYE = { Enter: "=", "=": "=", Escape: "C", c: "C", C: "C", ",": ".", ".": "." };
+  document.addEventListener("keydown", (e) => {
+    const t = /^[0-9+\-*/]$/.test(e.key) ? e.key : KLAVYE[e.key];
+    if (t) { e.preventDefault(); bas(t); }
+  });
+</script>
+</body>
+</html>

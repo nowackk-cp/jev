@@ -1,0 +1,15 @@
+"""Sıcaklık birimleri arasında dönüşüm: C, F, K."""
+
+BIRIMLER = ("C", "F", "K")
+
+
+def _celsius(deger: float, birim: str) -> float:
+    return {"C": deger, "F": (deger - 32) * 5 / 9, "K": deger - 273.15}[birim]
+
+
+def cevir(deger: float, kaynak: str, hedef: str) -> float:
+    for birim in (kaynak, hedef):
+        if birim not in BIRIMLER:
+            raise ValueError(f"Bilinmeyen sıcaklık birimi: {birim}")
+    c = _celsius(deger, kaynak)
+    return {"C": c, "F": c * 9 / 5 + 32, "K": c + 273.15}[hedef]

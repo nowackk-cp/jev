@@ -1,0 +1,309 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "decision": {
+      "type": "string",
+      "enum": [
+        "retry",
+        "reassign",
+        "split",
+        "revise",
+        "skip",
+        "pause",
+        "abort"
+      ]
+    },
+    "agent": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "sol",
+        "sonnet",
+        "luna",
+        "opus",
+        null
+      ]
+    },
+    "effort": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max",
+        null
+      ]
+    },
+    "rollback": {
+      "type": "boolean"
+    },
+    "guidance": {
+      "type": "string"
+    },
+    "revised_task": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "module": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "code",
+                "test",
+                "docs",
+                "config",
+                "research"
+              ]
+            },
+            "description": {
+              "type": "string"
+            },
+            "reads": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "outputs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "contracts": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "acceptance": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "verify": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "depends_on": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "covers_criteria": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "complexity": {
+              "type": "string",
+              "enum": [
+                "S",
+                "M",
+                "L"
+              ]
+            },
+            "suggested_agent": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "opus",
+                "sol",
+                "sonnet",
+                "luna",
+                null
+              ]
+            },
+            "notes": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "title",
+            "module",
+            "type",
+            "description",
+            "reads",
+            "outputs",
+            "contracts",
+            "acceptance",
+            "verify",
+            "depends_on",
+            "covers_criteria",
+            "complexity",
+            "suggested_agent",
+            "notes"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "new_tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "module": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "code",
+              "test",
+              "docs",
+              "config",
+              "research"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "reads": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "outputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "contracts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "acceptance": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "verify": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "depends_on": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "covers_criteria": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "complexity": {
+            "type": "string",
+            "enum": [
+              "S",
+              "M",
+              "L"
+            ]
+          },
+          "suggested_agent": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "opus",
+              "sol",
+              "sonnet",
+              "luna",
+              null
+            ]
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "module",
+          "type",
+          "description",
+          "reads",
+          "outputs",
+          "contracts",
+          "acceptance",
+          "verify",
+          "depends_on",
+          "covers_criteria",
+          "complexity",
+          "suggested_agent",
+          "notes"
+        ]
+      }
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "deviation": {
+      "type": "string",
+      "enum": [
+        "none",
+        "minor",
+        "major"
+      ]
+    },
+    "report_note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "decision",
+    "agent",
+    "effort",
+    "rollback",
+    "guidance",
+    "revised_task",
+    "new_tasks",
+    "rationale",
+    "deviation",
+    "report_note"
+  ]
+}

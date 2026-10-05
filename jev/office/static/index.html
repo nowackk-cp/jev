@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light dark">
+<title>Jev Ofis</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M5 21Q5 8 16 7Q27 8 27 21Z' fill='%23e07a2e'/%3E%3Cpath d='M14.6 7.2Q16 6.8 17.4 7.2L17.7 20H14.3Z' fill='%23f5a868'/%3E%3Cpath d='M2.5 21Q16 18.4 29.5 21Q30 24.2 27 24.2Q16 22.2 5 24.2Q2 24.2 2.5 21Z' fill='%23b25a18'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/office.css">
+<script src="/characters.js" defer></script>
+<script src="/scene.js" defer></script>
+<script src="/office.js" defer></script>
+</head>
+<body>
+
+<header id="top" class="top">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+      <path d="M5 21Q5 8 16 7Q27 8 27 21Z" fill="#e07a2e"/>
+      <path d="M14.6 7.2Q16 6.8 17.4 7.2L17.7 20H14.3Z" fill="#f5a868"/>
+      <path d="M2.5 21Q16 18.4 29.5 21Q30 24.2 27 24.2Q16 22.2 5 24.2Q2 24.2 2.5 21Z" fill="#b25a18"/>
+      <path d="M9 13Q11 10 14 9.2" stroke="#fff" stroke-opacity=".6" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    </svg>
+    <b>jev</b> <span>ofis</span>
+  </div>
+  <div class="proj">
+    <div id="proj-name" class="proj-name">Ofis açılıyor…</div>
+    <div id="proj-req" class="proj-req"></div>
+  </div>
+  <ol id="phases" class="phases" aria-label="Aşamalar"></ol>
+  <div id="run-pills" class="pills"></div>
+  <div class="meta">
+    <span id="elapsed" class="elapsed" title="Çalışma süresi (onay, rapor ve duraklama beklemesi sayılmaz)">0:00</span>
+    <div class="prog" title="Biten görevler">
+      <span id="prog-text" class="prog-text">Görev yok</span>
+      <div class="bar"><i id="prog-bar"></i></div>
+    </div>
+    <span id="conn" class="conn" data-state="connecting" role="status">Bağlanıyor…</span>
+  </div>
+  <div class="acts-top">
+    <button id="btn-plan" class="btn small" type="button" disabled>Plan</button>
+    <button id="btn-report" class="btn small" type="button" disabled>Rapor</button>
+    <button id="btn-theme" class="btn icon" type="button" title="Tema: otomatik" aria-label="Tema: otomatik">◐</button>
+  </div>
+</header>
+
+<main id="app" class="main">
+  <div class="left">
+    <section class="stage-wrap" aria-label="Ofis">
+      <div id="stage" class="stage">
+        <div class="stage-empty">Ofis hazırlanıyor…</div>
+      </div>
+    </section>
+
+    <section id="controls" class="controls" data-kind="working" aria-live="polite">
+      <div class="msg"><b>Bağlanılıyor…</b></div>
+    </section>
+
+    <section id="kanban" class="kanban" aria-label="Görev panosu">
+      <div class="col" data-col="pending"><h3><span>Bekliyor</span><b class="n">0</b></h3><div class="cards"></div></div>
+      <div class="col" data-col="ready"><h3><span>Sırada</span><b class="n">0</b></h3><div class="cards"></div></div>
+      <div class="col" data-col="running"><h3><span>Çalışıyor</span><b class="n">0</b></h3><div class="cards"></div></div>
+      <div class="col" data-col="verifying"><h3><span>Doğrulanıyor</span><b class="n">0</b></h3><div class="cards"></div></div>
+      <div class="col" data-col="done"><h3><span>Bitti</span><b class="n">0</b></h3><div class="cards"></div></div>
+      <div class="col" data-col="trouble"><h3><span>Sorunlu</span><b class="n">0</b></h3><div class="cards"></div></div>
+    </section>
+  </div>
+
+  <aside class="side" aria-label="Akış ve kararlar">
+    <div class="tabs" role="tablist">
+      <button id="tab-feed" class="tab" type="button" role="tab" aria-selected="true" aria-controls="feed">Akış</button>
+      <button id="tab-dec" class="tab" type="button" role="tab" aria-selected="false" aria-controls="decs">Jev'in kararları <span id="dec-count" class="cnt"></span></button>
+    </div>
+    <div id="feed" class="pane" role="tabpanel" aria-labelledby="tab-feed" tabindex="0">
+      <div class="pane-empty">Henüz olay yok.</div>
+    </div>
+    <div id="decs" class="pane" role="tabpanel" aria-labelledby="tab-dec" tabindex="0" hidden>
+      <div class="pane-empty">Jev henüz bir karar vermedi.</div>
+    </div>
+  </aside>
+</main>
+
+<dialog id="dlg-agent" aria-labelledby="dlg-agent-h">
+  <div class="dlg-head">
+    <h2 id="dlg-agent-h">Ajan</h2>
+    <button class="btn icon x-close" type="button" data-close aria-label="Kapat">×</button>
+  </div>
+  <div class="dlg-body"></div>
+  <div class="dlg-foot">
+    <span class="grow">Açıkken kendiliğinden yenilenir.</span>
+    <button class="btn" type="button" data-close>Kapat</button>
+  </div>
+</dialog>
+
+<dialog id="dlg-report" aria-labelledby="dlg-report-h">
+  <div class="dlg-head">
+    <h2 id="dlg-report-h">Rapor</h2>
+    <select id="report-round" class="round-sel" aria-label="Tur" hidden></select>
+    <button class="btn icon x-close" type="button" data-close aria-label="Kapat">×</button>
+  </div>
+  <div class="dlg-body"></div>
+  <div class="dlg-foot">
+    <span class="grow">Raporu orta ve büyük işte denetçi, mini ve küçük işte Jev yazar; düzeltme turunu yalnızca sen başlatırsın.</span>
+    <button class="btn" type="button" data-close>Kapat</button>
+  </div>
+</dialog>
+
+<dialog id="dlg-plan" aria-labelledby="dlg-plan-h">
+  <div class="dlg-head">
+    <h2 id="dlg-plan-h">Plan</h2>
+    <button class="btn icon x-close" type="button" data-close aria-label="Kapat">×</button>
+  </div>
+  <div class="dlg-body"></div>
+  <div class="dlg-foot">
+    <span class="grow"></span>
+    <button id="plan-reject" class="btn danger" type="button" hidden>Reddet ve çık</button>
+    <button id="plan-approve" class="btn ok" type="button" hidden>Planı onayla</button>
+    <button class="btn" type="button" data-close>Kapat</button>
+  </div>
+</dialog>
+
+<dialog id="dlg-task" aria-labelledby="dlg-task-h">
+  <div class="dlg-head">
+    <h2 id="dlg-task-h">Görev</h2>
+    <button class="btn icon x-close" type="button" data-close aria-label="Kapat">×</button>
+  </div>
+  <div class="dlg-body"></div>
+  <div class="dlg-foot">
+    <span class="grow"></span>
+    <button class="btn" type="button" data-close>Kapat</button>
+  </div>
+</dialog>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+<div id="fx" class="fx" aria-hidden="true"></div>
+
+<section id="nokey" class="nokey" hidden>
+  <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+    <path d="M5 21Q5 8 16 7Q27 8 27 21Z" fill="#e07a2e"/>
+    <path d="M14.6 7.2Q16 6.8 17.4 7.2L17.7 20H14.3Z" fill="#f5a868"/>
+    <path d="M2.5 21Q16 18.4 29.5 21Q30 24.2 27 24.2Q16 22.2 5 24.2Q2 24.2 2.5 21Z" fill="#b25a18"/>
+  </svg>
+  <h1 id="nokey-h">Erişim anahtarı yok</h1>
+  <p id="nokey-p">Ofis yalnızca terminalde yazan adresle açılır. Adresin sonunda <code>?k=…</code> ile başlayan bir anahtar bulunur.</p>
+  <p>Terminaldeki <b>Ofis:</b> satırındaki adresi aç. Anahtar, <code>jev</code> her başladığında değişir.</p>
+</section>
+
+<noscript><p class="nokey">Jev ofisi için JavaScript gerekli.</p></noscript>
+
+</body>
+</html>

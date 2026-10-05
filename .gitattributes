@@ -1,0 +1,5 @@
+# Depoda LF; Windows betikleri CRLF ile çıkar (PowerShell 5.1 ve cmd için).
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf

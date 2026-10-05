@@ -1,0 +1,50 @@
+"""Komut satırı: python -m todo <komut>."""
+from __future__ import annotations
+
+import argparse
+import sys
+
+from .store import TodoStore
+
+
+def build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(prog="python -m todo", description="Basit yapılacaklar listesi")
+    sub = p.add_subparsers(dest="komut", required=True)
+    a = sub.add_parser("ekle", help="yeni görev ekle")
+    a.add_argument("metin", nargs="+")
+    sub.add_parser("listele", help="görevleri göster")
+    b = sub.add_parser("bitir", help="görevi tamamlandı olarak işaretle")
+    b.add_argument("numara", type=int)
+    s = sub.add_parser("sil", help="görevi sil")
+    s.add_argument("numara", type=int)
+    return p
+
+
+def main(argv: list[str] | None = None) -> int:
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8")
+        except (AttributeError, ValueError):
+            pass
+    args = build_parser().parse_args(argv)
+    store = TodoStore()
+    try:
+        if args.komut == "ekle":
+            item = store.add(" ".join(args.metin))
+            print(f"Eklendi: {item['text']}")
+        elif args.komut == "listele":
+            items = store.list()
+            if not items:
+                print("Liste boş.")
+            for i, x in enumerate(items, 1):
+                print(f"{i}. [{'x' if x['done'] else ' '}] {x['text']}")
+        elif args.komut == "bitir":
+            item = store.done(args.numara)
+            print(f"Tamamlandı: {item['text']}")
+        elif args.komut == "sil":
+            item = store.remove(args.numara)
+            print(f"Silindi: {item['text']}")
+    except (IndexError, ValueError) as e:
+        print(f"Hata: {e}", file=sys.stderr)
+        return 1
+    return 0

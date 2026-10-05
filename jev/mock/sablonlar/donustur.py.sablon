@@ -1,0 +1,30 @@
+"""Komut satırı: python donustur.py DEGER KAYNAK HEDEF (ör. 5 km m, 100 C F)."""
+import sys
+
+import sicaklik
+import uzunluk
+
+
+def donustur(deger: float, kaynak: str, hedef: str) -> float:
+    if kaynak in uzunluk.METRE and hedef in uzunluk.METRE:
+        return uzunluk.cevir(deger, kaynak, hedef)
+    if kaynak in sicaklik.BIRIMLER and hedef in sicaklik.BIRIMLER:
+        return sicaklik.cevir(deger, kaynak, hedef)
+    raise ValueError(f"Bu birimler arasında dönüşüm yok: {kaynak} → {hedef}")
+
+
+def main(argv: list[str]) -> int:
+    if len(argv) != 3:
+        print("Kullanım: python donustur.py DEGER KAYNAK HEDEF", file=sys.stderr)
+        return 2
+    try:
+        sonuc = donustur(float(argv[0].replace(",", ".")), argv[1], argv[2])
+    except ValueError as e:
+        print(f"Hata: {e}", file=sys.stderr)
+        return 1
+    print(f"{sonuc:g} {argv[2]}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

@@ -1,0 +1,56 @@
+import tempfile
+import unittest
+from pathlib import Path
+
+from todo.store import TodoStore
+
+
+class StoreTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.store = TodoStore(Path(self.tmp.name) / "todo.json")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_add_and_list(self):
+        self.store.add("Süt al")
+        self.store.add("Çiçekleri sula")
+        self.assertEqual([x["text"] for x in self.store.list()], ["Süt al", "Çiçekleri sula"])
+
+    def test_persistence_and_turkish(self):
+        self.store.add("Işıkları kapat, ğüşiöç")
+        again = TodoStore(self.store.path)
+        self.assertEqual(again.list()[0]["text"], "Işıkları kapat, ğüşiöç")
+
+    def test_done_marks_right_item(self):
+        self.store.add("bir")
+        self.store.add("iki")
+        self.store.done(1)
+        self.assertEqual([x["done"] for x in self.store.list()], [True, False])
+
+    def test_remove(self):
+        self.store.add("bir")
+        self.store.add("iki")
+        self.store.remove(2)
+        self.assertEqual([x["text"] for x in self.store.list()], ["bir"])
+
+    def test_invalid_number(self):
+        with self.assertRaises(IndexError):
+            self.store.done(5)
+
+    def test_empty_text(self):
+        with self.assertRaises(ValueError):
+            self.store.add("   ")
+
+    def test_clear_done(self):
+        for t in ("a", "b", "c"):
+            self.store.add(t)
+        self.store.done(1)
+        self.store.done(3)
+        self.assertEqual(self.store.clear_done(), 2)
+        self.assertEqual([x["text"] for x in self.store.list()], ["b"])
+
+
+if __name__ == "__main__":
+    unittest.main()

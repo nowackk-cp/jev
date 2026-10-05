@@ -1,0 +1,55 @@
+// Hesap makinesi mantığı: tarayıcıda (window.Hesap) ve Node'da (require) aynı kod çalışır.
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === "object" && module.exports) module.exports = api;
+  else root.Hesap = api;
+})(typeof self !== "undefined" ? self : this, function () {
+  "use strict";
+
+  function yeni() {
+    return { ekran: "0", onceki: null, islem: null, yeniSayi: true };
+  }
+
+  function hesapla(a, b, islem) {
+    switch (islem) {
+      case "+": return a + b;
+      case "-": return a - b;
+      case "*": return a * b;
+      case "/": return b === 0 ? NaN : a / b;
+      default: return b;
+    }
+  }
+
+  function bicim(x) {
+    if (!Number.isFinite(x)) return "Hata";
+    return String(Math.round(x * 1e10) / 1e10);
+  }
+
+  // Tek tuşa basar: durumu günceller ve ekranda görünecek metni döner. İşlemler soldan sağa yapılır.
+  function tus(d, t) {
+    if (t === "C" || d.ekran === "Hata") Object.assign(d, yeni());
+    if (t === "C") return d.ekran;
+    if (/^[0-9]$/.test(t)) {
+      d.ekran = d.yeniSayi || d.ekran === "0" ? t : d.ekran + t;
+      d.yeniSayi = false;
+    } else if (t === ".") {
+      if (d.yeniSayi) d.ekran = "0.";
+      else if (!d.ekran.includes(".")) d.ekran += ".";
+      d.yeniSayi = false;
+    } else if ("+-*/".includes(t)) {
+      if (d.islem && !d.yeniSayi) d.ekran = bicim(hesapla(d.onceki, parseFloat(d.ekran), d.islem));
+      const hata = d.ekran === "Hata";
+      d.onceki = hata ? null : parseFloat(d.ekran);
+      d.islem = hata ? null : t;
+      d.yeniSayi = true;
+    } else if (t === "=" && d.islem) {
+      d.ekran = bicim(hesapla(d.onceki, parseFloat(d.ekran), d.islem));
+      d.onceki = null;
+      d.islem = null;
+      d.yeniSayi = true;
+    }
+    return d.ekran;
+  }
+
+  return { yeni, hesapla, bicim, tus };
+});

@@ -1,0 +1,22 @@
+import unittest
+
+from sicaklik import cevir
+
+
+class SicaklikTest(unittest.TestCase):
+    def test_c_f(self):
+        self.assertAlmostEqual(cevir(100, "C", "F"), 212)
+
+    def test_f_c(self):
+        self.assertAlmostEqual(cevir(32, "F", "C"), 0)
+
+    def test_kelvin(self):
+        self.assertAlmostEqual(cevir(0, "C", "K"), 273.15)
+
+    def test_bilinmeyen_birim(self):
+        with self.assertRaises(ValueError):
+            cevir(1, "X", "C")
+
+
+if __name__ == "__main__":
+    unittest.main()

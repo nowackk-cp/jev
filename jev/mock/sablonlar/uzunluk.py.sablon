@@ -1,0 +1,10 @@
+"""Uzunluk birimleri arasında dönüşüm: mm, cm, m, km, mil."""
+
+METRE = {"mm": 0.001, "cm": 0.01, "m": 1.0, "km": 1000.0, "mil": 1609.344}
+
+
+def cevir(deger: float, kaynak: str, hedef: str) -> float:
+    for birim in (kaynak, hedef):
+        if birim not in METRE:
+            raise ValueError(f"Bilinmeyen uzunluk birimi: {birim}")
+    return deger * METRE[kaynak] / METRE[hedef]
